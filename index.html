@@ -1,0 +1,930 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Job Explorer 职业探索</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;700&display=swap">
+
+<style>
+/* ── Layout: single-column wizard, card-per-step, mobile-first ─────────── */
+:root {
+  --bg:        #FBF7F2;
+  --surface:   #FFFFFF;
+  --border:    #EAE3DA;
+  --fg:        #2E2118;
+  --muted:     #7A6E65;
+  --coral:     #FF6B47;
+  --coral-lt:  #FFF0EC;
+  --teal:      #2A8C7E;
+  --teal-lt:   #E6F5F3;
+  --gold:      #D48A0C;
+  --gold-lt:   #FEF6E4;
+  --lavender:  #7B5EA7;
+  --lav-lt:    #F2EDF9;
+  --radius:    14px;
+  --shadow:    0 2px 12px rgba(46,33,24,.08);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:       #1A1410;
+    --surface:  #251E18;
+    --border:   #3A2F26;
+    --fg:       #F0E8DF;
+    --muted:    #A0958C;
+    --coral:    #FF7A5A;
+    --coral-lt: #2E1A14;
+    --teal:     #3AADA0;
+    --teal-lt:  #0F2825;
+    --gold:     #E8A020;
+    --gold-lt:  #28200A;
+    --lavender: #9B7EC8;
+    --lav-lt:   #1E1528;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #1A1410;
+  --surface:  #251E18;
+  --border:   #3A2F26;
+  --fg:       #F0E8DF;
+  --muted:    #A0958C;
+  --coral:    #FF7A5A;
+  --coral-lt: #2E1A14;
+  --teal:     #3AADA0;
+  --teal-lt:  #0F2825;
+  --gold:     #E8A020;
+  --gold-lt:  #28200A;
+  --lavender: #9B7EC8;
+  --lav-lt:   #1E1528;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Nunito', 'Noto Sans SC', sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+.progress-wrap {
+  max-width: 540px;
+  margin: 0 auto 20px;
+}
+.progress-label {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--coral);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+.card-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 8px;
+}
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--fg);
+  text-wrap: balance;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.card-subtitle {
+  font-size: .88rem;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+/* ── Question options ─────────────────────────────────────────────────── */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .18s, background .18s, transform .1s;
+  font-family: inherit;
+  color: var(--fg);
+  font-size: .95rem;
+  line-height: 1.4;
+}
+.option-btn:hover { border-color: var(--coral); background: var(--coral-lt); }
+.option-btn.selected {
+  border-color: var(--coral);
+  background: var(--coral-lt);
+}
+.option-btn .emoji {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.option-text-en { font-weight: 700; display: block; }
+.option-text-zh { font-size: .82rem; color: var(--muted); display: block; }
+
+/* ── Navigation ──────────────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.btn {
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity .15s, transform .1s;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--coral); color: #fff; }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--coral); color: var(--coral); }
+
+/* ── Results ─────────────────────────────────────────────────────────── */
+.results-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.results-header .big-emoji { font-size: 3rem; margin-bottom: 8px; }
+.results-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--fg); text-wrap: balance; }
+.results-header p { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+
+.job-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+
+.job-card {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.job-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.job-icon {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.job-name-en { font-weight: 800; font-size: 1.05rem; }
+.job-name-zh { font-size: .85rem; color: var(--muted); }
+.match-badge {
+  margin-left: auto;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.job-card-body {
+  padding: 0 16px 14px;
+  font-size: .88rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.job-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.detail-chip {
+  font-size: .78rem;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+/* ── Reflection box ─────────────────────────────────────────────────── */
+.reflect-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.reflect-box label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--coral);
+  margin-bottom: 6px;
+  letter-spacing: .03em;
+}
+.reflect-box textarea, .reflect-box input[type="text"] {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: .92rem;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.reflect-box textarea:focus, .reflect-box input:focus {
+  outline: none;
+  border-color: var(--coral);
+}
+.reflect-box textarea { min-height: 72px; }
+
+/* ── Share instruction ──────────────────────────────────────────────── */
+.share-note {
+  background: var(--teal-lt);
+  border: 1px solid var(--teal);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: .85rem;
+  color: var(--fg);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+.share-note strong { color: var(--teal); }
+
+/* ── Intro / welcome ────────────────────────────────────────────────── */
+.intro-emoji { font-size: 3.5rem; text-align: center; margin-bottom: 12px; }
+.intro-title { font-size: 1.6rem; font-weight: 800; text-align: center; margin-bottom: 6px; line-height: 1.2; }
+.intro-sub { font-size: .9rem; color: var(--muted); text-align: center; margin-bottom: 24px; }
+.intro-info {
+  background: var(--coral-lt);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: .88rem;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+.intro-info ul { padding-left: 18px; }
+.intro-info li + li { margin-top: 4px; }
+.name-input {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.name-input:focus { outline: none; border-color: var(--coral); }
+
+/* ── Site header ──────────────────────────────────────────────────────── */
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: .85rem;
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+}
+.site-header-logo { font-size: 1.1rem; }
+.site-header-title { font-weight: 700; color: var(--fg); flex: 1; }
+.site-header-zh { font-weight: 400; color: var(--muted); font-size: .78rem; margin-left: 4px; }
+.site-header-credit {
+  font-size: .78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 3px 10px;
+  background: var(--lav-lt);
+  color: var(--lavender);
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.site-header-credit strong { color: var(--lavender); }
+</style>
+
+<header class="site-header">
+  <span class="site-header-logo">🌐</span>
+  <span class="site-header-title">Job Explorer <span class="site-header-zh">职业探索</span></span>
+  <span class="site-header-credit">Designed by <strong>Lavinder</strong></span>
+</header>
+
+<div class="progress-wrap" id="progressWrap" hidden>
+  <div class="progress-label">
+    <span id="progressLabel">Question 1 / 8</span>
+    <span id="progressPct">12%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:12%"></div></div>
+</div>
+
+<div class="card" id="app"></div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  {
+    id: 'q1',
+    en: 'After school, what do you enjoy most?',
+    zh: '放学后，你最喜欢做什么？',
+    options: [
+      { en: 'Playing or watching sports', zh: '运动或看体育比赛', traits: ['physical','outdoors'] },
+      { en: 'Drawing, making music, or being creative', zh: '画画、音乐或其他创意活动', traits: ['creative','arts'] },
+      { en: 'Reading, researching, or watching documentaries', zh: '阅读、研究或看纪录片', traits: ['intellectual','science'] },
+      { en: 'Chatting with friends or helping people', zh: '和朋友聊天或帮助他人', traits: ['social','care'] },
+    ]
+  },
+  {
+    id: 'q2',
+    en: 'Which classroom activity do you like best?',
+    zh: '在学校，你最喜欢哪种活动？',
+    options: [
+      { en: 'Science experiments', zh: '科学实验', traits: ['intellectual','science','tech'] },
+      { en: 'Art or design projects', zh: '美术或设计项目', traits: ['creative','arts'] },
+      { en: 'Group discussions or debates', zh: '小组讨论或辩论', traits: ['social','leadership'] },
+      { en: 'Maths or logic puzzles', zh: '数学或逻辑题', traits: ['analytical','tech'] },
+    ]
+  },
+  {
+    id: 'q3',
+    en: 'What kind of superpower would you choose?',
+    zh: '如果你能有一种超能力，你会选哪个？',
+    options: [
+      { en: 'Heal any injury or illness instantly', zh: '立刻治愈任何伤病', traits: ['care','science'] },
+      { en: 'Build or create anything you imagine', zh: '创造出你脑海中的任何东西', traits: ['creative','tech'] },
+      { en: 'Understand any language or animal', zh: '听懂任何语言或动物说话', traits: ['social','intellectual'] },
+      { en: 'Fly anywhere and explore the world', zh: '飞到任何地方探索世界', traits: ['outdoors','physical','adventure'] },
+    ]
+  },
+  {
+    id: 'q4',
+    en: 'What would make a job feel meaningful to you?',
+    zh: '什么样的工作让你觉得有意义？',
+    options: [
+      { en: 'Helping people who are sick or in need', zh: '帮助生病或有困难的人', traits: ['care','social'] },
+      { en: 'Making something beautiful or exciting', zh: '创造出美丽或令人兴奋的作品', traits: ['creative','arts'] },
+      { en: 'Solving a big problem for the world', zh: '解决世界上的大难题', traits: ['intellectual','science','tech'] },
+      { en: 'Leading a team or running a business', zh: '带领团队或经营一家公司', traits: ['leadership','social'] },
+    ]
+  },
+  {
+    id: 'q5',
+    en: 'Where would you prefer to work?',
+    zh: '你更喜欢在哪里工作？',
+    options: [
+      { en: 'Outdoors — forests, oceans, or cities', zh: '户外 — 森林、海洋或城市', traits: ['outdoors','adventure','physical'] },
+      { en: 'A studio, lab, or creative space', zh: '工作室、实验室或创意空间', traits: ['creative','intellectual','science'] },
+      { en: 'An office or from home', zh: '办公室或在家', traits: ['analytical','tech'] },
+      { en: 'A school, hospital, or community', zh: '学校、医院或社区', traits: ['care','social'] },
+    ]
+  },
+  {
+    id: 'q6',
+    en: 'A friend is upset. What do you naturally do?',
+    zh: '朋友心情不好，你通常会怎么做？',
+    options: [
+      { en: 'Listen and comfort them patiently', zh: '耐心倾听，给予安慰', traits: ['care','social'] },
+      { en: 'Try to find a practical solution', zh: '帮他们找到实际的解决办法', traits: ['analytical','leadership'] },
+      { en: 'Make them laugh or cheer them up creatively', zh: '用创意或幽默逗他们开心', traits: ['creative','arts','social'] },
+      { en: 'Research what might help and share it', zh: '查找有用信息并分享给他们', traits: ['intellectual','science'] },
+    ]
+  },
+  {
+    id: 'q7',
+    en: 'Which of these do you think you\'re best at?',
+    zh: '你认为自己最擅长的是什么？',
+    options: [
+      { en: 'Explaining things clearly to others', zh: '清楚地向他人解释事物', traits: ['social','care','leadership'] },
+      { en: 'Noticing details others miss', zh: '发现别人忽略的细节', traits: ['intellectual','analytical','science'] },
+      { en: 'Coming up with new and unusual ideas', zh: '想出新颖独特的创意', traits: ['creative','arts'] },
+      { en: 'Staying calm under pressure', zh: '在压力下保持冷静', traits: ['physical','leadership','care'] },
+    ]
+  },
+  {
+    id: 'q8',
+    en: 'Which topic could you talk about for hours?',
+    zh: '哪个话题你可以聊好几个小时？',
+    options: [
+      { en: 'Animals, nature, or the environment', zh: '动物、自然或环境', traits: ['outdoors','science','intellectual'] },
+      { en: 'Technology, coding, or gadgets', zh: '科技、编程或电子设备', traits: ['tech','analytical'] },
+      { en: 'Stories, films, art, or music', zh: '故事、电影、艺术或音乐', traits: ['arts','creative'] },
+      { en: 'People, feelings, and society', zh: '人、情感和社会', traits: ['social','care','leadership'] },
+    ]
+  },
+];
+
+// ── Job database (30 jobs) ────────────────────────────────────────────────────
+const JOBS = [
+  {
+    en:'Doctor', zh:'医生', emoji:'🩺',
+    traits:['care','science','intellectual','social'],
+    descEn:'Diagnose and treat patients, help people recover and stay healthy.',
+    descZh:'为病人诊断和治疗，帮助他们康复并保持健康。',
+    skills:['Biology 生物','Communication 沟通','Problem-solving 解决问题'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Nurse', zh:'护士', emoji:'💊',
+    traits:['care','social','physical'],
+    descEn:'Care for patients day to day, give medicine, and support families.',
+    descZh:'日常照顾病人，给药并支持患者家属。',
+    skills:['Empathy 同理心','Science 科学','Teamwork 团队合作'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Veterinarian', zh:'兽医', emoji:'🐾',
+    traits:['care','science','outdoors'],
+    descEn:'Treat animals — from pets to wild creatures — and keep them healthy.',
+    descZh:'为宠物和野生动物诊治，守护动物健康。',
+    skills:['Biology 生物','Patience 耐心','Science 科学'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Teacher', zh:'教师', emoji:'📚',
+    traits:['social','care','leadership','intellectual'],
+    descEn:'Help students learn, grow, and discover what they love.',
+    descZh:'帮助学生学习、成长，发现他们热爱的事物。',
+    skills:['Communication 沟通','Creativity 创意','Patience 耐心'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Counsellor / Psychologist', zh:'心理咨询师', emoji:'🧠',
+    traits:['social','care','intellectual'],
+    descEn:'Listen to people\'s feelings and help them solve emotional problems.',
+    descZh:'倾听他人的感受，帮助他们解决情感问题。',
+    skills:['Empathy 同理心','Communication 沟通','Patience 耐心'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Social Worker', zh:'社会工作者', emoji:'🤝',
+    traits:['care','social','leadership'],
+    descEn:'Support families and communities facing difficulties — poverty, abuse, or crisis.',
+    descZh:'支持面临困境的家庭和社区，如贫困、虐待或危机情况。',
+    skills:['Empathy 同理心','Communication 沟通','Resilience 韧性'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Software Engineer', zh:'软件工程师', emoji:'💻',
+    traits:['tech','analytical','intellectual'],
+    descEn:'Write code to build apps, websites, games, and AI systems.',
+    descZh:'编写代码，开发应用程序、网站、游戏和人工智能系统。',
+    skills:['Maths 数学','Logic 逻辑','Coding 编程'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Data Scientist', zh:'数据科学家', emoji:'📊',
+    traits:['analytical','intellectual','tech','science'],
+    descEn:'Analyse huge amounts of data to find patterns and make decisions.',
+    descZh:'分析海量数据，发现规律并辅助决策。',
+    skills:['Maths 数学','Statistics 统计','Coding 编程'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Game Designer', zh:'游戏设计师', emoji:'🎮',
+    traits:['creative','tech','analytical','arts'],
+    descEn:'Design the rules, worlds, and experiences that make video games fun and engaging.',
+    descZh:'设计规则、世界和体验，让电子游戏有趣且引人入胜。',
+    skills:['Creativity 创意','Coding 编程','Storytelling 讲故事'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Architect', zh:'建筑师', emoji:'🏛️',
+    traits:['creative','analytical','tech'],
+    descEn:'Design buildings — houses, schools, museums — that are beautiful and safe.',
+    descZh:'设计建筑 — 住宅、学校、博物馆 — 兼顾美观与安全。',
+    skills:['Maths 数学','Art 艺术','Engineering 工程'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Urban Planner', zh:'城市规划师', emoji:'🏙️',
+    traits:['analytical','intellectual','social','outdoors'],
+    descEn:'Plan how cities grow — designing parks, roads, housing, and public spaces.',
+    descZh:'规划城市发展 — 设计公园、道路、住房和公共空间。',
+    skills:['Geography 地理','Analysis 分析','Communication 沟通'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Graphic Designer', zh:'平面设计师', emoji:'🎨',
+    traits:['creative','arts','tech'],
+    descEn:'Create logos, posters, and visual content for brands and media.',
+    descZh:'为品牌和媒体创作logo、海报和视觉内容。',
+    skills:['Art 艺术','Software 软件','Communication 沟通'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Filmmaker / Director', zh:'电影导演', emoji:'🎬',
+    traits:['creative','arts','leadership','social'],
+    descEn:'Tell stories through film, directing actors, cameras, and music.',
+    descZh:'通过电影讲述故事，指导演员、摄像和音乐。',
+    skills:['Storytelling 讲故事','Leadership 领导力','Creativity 创意'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Musician', zh:'音乐家', emoji:'🎵',
+    traits:['creative','arts','social'],
+    descEn:'Perform, compose, or produce music that moves people.',
+    descZh:'演奏、创作或制作打动人心的音乐。',
+    skills:['Music 音乐','Practice 练习','Expression 表达'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Translator / Interpreter', zh:'翻译 / 口译员', emoji:'🌐',
+    traits:['intellectual','social','arts'],
+    descEn:'Bridge cultures by translating languages in writing or live conversation.',
+    descZh:'通过书面或口头翻译语言，架起文化之间的桥梁。',
+    skills:['Languages 语言','Listening 倾听','Attention to detail 细心'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Journalist / Reporter', zh:'记者', emoji:'📰',
+    traits:['social','intellectual','adventure','leadership'],
+    descEn:'Investigate stories, interview people, and inform the public.',
+    descZh:'调查新闻、采访人物，向公众传递真实信息。',
+    skills:['Writing 写作','Research 研究','Communication 沟通'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Scientist / Researcher', zh:'科学家', emoji:'🔬',
+    traits:['intellectual','science','analytical'],
+    descEn:'Ask big questions about the world and run experiments to find answers.',
+    descZh:'提出关于世界的重大问题，通过实验寻找答案。',
+    skills:['Curiosity 好奇心','Analysis 分析','Writing 写作'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Marine Biologist', zh:'海洋生物学家', emoji:'🐬',
+    traits:['science','outdoors','intellectual','adventure'],
+    descEn:'Study ocean creatures and ecosystems to understand and protect marine life.',
+    descZh:'研究海洋生物和生态系统，了解并保护海洋生命。',
+    skills:['Biology 生物','Swimming 游泳','Research 研究'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Environmental Scientist', zh:'环境科学家', emoji:'🌿',
+    traits:['science','outdoors','intellectual','care'],
+    descEn:'Study nature, climate, and pollution to protect our planet.',
+    descZh:'研究自然、气候和污染，保护我们的地球。',
+    skills:['Biology 生物','Research 研究','Outdoors 户外'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Lawyer', zh:'律师', emoji:'⚖️',
+    traits:['intellectual','social','leadership','analytical'],
+    descEn:'Defend people\'s rights in court and give legal advice to those who need it.',
+    descZh:'在法庭上维护人们的权利，为有需要的人提供法律建议。',
+    skills:['Argumentation 论辩','Research 研究','Communication 沟通'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Entrepreneur', zh:'创业者', emoji:'🚀',
+    traits:['leadership','creative','social','analytical'],
+    descEn:'Start your own business and turn your ideas into real products or services.',
+    descZh:'创建自己的企业，将创意转化为产品或服务。',
+    skills:['Risk-taking 冒险','Creativity 创意','Leadership 领导力'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Pilot / Astronaut', zh:'飞行员 / 宇航员', emoji:'✈️',
+    traits:['adventure','physical','tech','intellectual'],
+    descEn:'Fly aircraft or travel to space — the ultimate journey.',
+    descZh:'驾驶飞机或前往太空 — 终极旅程。',
+    skills:['Focus 专注','Maths 数学','Courage 勇气'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Athlete / Sports Coach', zh:'运动员 / 教练', emoji:'🏆',
+    traits:['physical','outdoors','leadership','social'],
+    descEn:'Compete in sport at a high level, or train others to reach their best.',
+    descZh:'参加高水平体育竞技，或训练他人达到最佳状态。',
+    skills:['Discipline 自律','Teamwork 团队合作','Physical fitness 体能'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Chef / Food Designer', zh:'厨师 / 美食设计师', emoji:'👨‍🍳',
+    traits:['creative','arts','physical','social'],
+    descEn:'Create dishes that taste incredible and look like works of art.',
+    descZh:'创作美味可口、如艺术品般的菜肴。',
+    skills:['Creativity 创意','Taste 品味','Hard work 勤奋'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Fashion Designer', zh:'时装设计师', emoji:'👗',
+    traits:['creative','arts','social','leadership'],
+    descEn:'Design clothing and accessories that express identity and culture.',
+    descZh:'设计服装和配饰，表达个性与文化。',
+    skills:['Art 艺术','Trend awareness 潮流意识','Sewing 缝纫'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Archaeologist', zh:'考古学家', emoji:'🏺',
+    traits:['intellectual','outdoors','science','adventure'],
+    descEn:'Dig up ancient objects and uncover lost civilisations.',
+    descZh:'发掘古代文物，揭开失落文明的秘密。',
+    skills:['History 历史','Research 研究','Patience 耐心'],
+    color:'var(--gold)'
+  },
+  {
+    en:'Wildlife Photographer', zh:'野生动物摄影师', emoji:'📸',
+    traits:['outdoors','creative','arts','adventure','science'],
+    descEn:'Travel to wild places and capture nature through your lens.',
+    descZh:'前往野外，用镜头捕捉自然之美。',
+    skills:['Photography 摄影','Patience 耐心','Outdoors 户外'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Engineer (Civil / Mechanical)', zh:'工程师（土木 / 机械）', emoji:'⚙️',
+    traits:['analytical','tech','intellectual','physical'],
+    descEn:'Design and build bridges, machines, engines, and the infrastructure we all use.',
+    descZh:'设计和建造桥梁、机器、引擎以及我们日常使用的基础设施。',
+    skills:['Maths 数学','Physics 物理','Problem-solving 解决问题'],
+    color:'var(--lavender)'
+  },
+  {
+    en:'Doctor of Traditional Medicine', zh:'中医师', emoji:'🌿',
+    traits:['care','science','intellectual','analytical'],
+    descEn:'Use herbs, acupuncture, and ancient knowledge to restore balance and health.',
+    descZh:'运用草药、针灸和传统知识来恢复身体平衡与健康。',
+    skills:['Biology 生物','Patience 耐心','Holistic thinking 整体思维'],
+    color:'var(--teal)'
+  },
+  {
+    en:'Animator / Illustrator', zh:'动画师 / 插画师', emoji:'✏️',
+    traits:['creative','arts','tech'],
+    descEn:'Bring characters and stories to life through drawing, digital art, or animation.',
+    descZh:'通过绘画、数字艺术或动画让角色和故事栩栩如生。',
+    skills:['Drawing 绘画','Storytelling 讲故事','Software 软件'],
+    color:'var(--coral)'
+  },
+  {
+    en:'Diplomat / International Relations', zh:'外交官 / 国际关系', emoji:'🌏',
+    traits:['social','intellectual','leadership','adventure'],
+    descEn:'Represent your country abroad, build relationships, and help solve global problems.',
+    descZh:'代表国家出访海外，建立关系，帮助解决全球性问题。',
+    skills:['Languages 语言','Negotiation 谈判','Cultural awareness 文化意识'],
+    color:'var(--gold)'
+  },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let step = 'intro'; // 'intro' | 0..7 | 'results'
+let studentName = '';
+let answers = {}; // qId -> option index
+let topJobs = [];
+
+// ── Scoring ───────────────────────────────────────────────────────────────────
+function score() {
+  const traitCounts = {};
+  QUESTIONS.forEach(q => {
+    const ans = answers[q.id];
+    if (ans == null) return;
+    q.options[ans].traits.forEach(t => { traitCounts[t] = (traitCounts[t] || 0) + 1; });
+  });
+  const total = Object.values(traitCounts).reduce((a, b) => a + b, 0) || 1;
+
+  const scored = JOBS.map(job => {
+    let s = 0;
+    job.traits.forEach(t => { s += (traitCounts[t] || 0); });
+    const max = job.traits.length * 2;
+    const pct = Math.round((s / max) * 100);
+    return { ...job, score: s, pct: Math.min(pct, 99) };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  // Pick top 5, ensure variety by not repeating same colour (trait cluster)
+  const picks = [];
+  const usedColors = new Set();
+  for (const j of scored) {
+    if (picks.length >= 5) break;
+    picks.push(j);
+    usedColors.add(j.color);
+  }
+  topJobs = picks;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+const progressWrap = document.getElementById('progressWrap');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const progressPct = document.getElementById('progressPct');
+
+function updateProgress(qIdx) {
+  const pct = Math.round(((qIdx + 1) / QUESTIONS.length) * 100);
+  progressFill.style.width = pct + '%';
+  progressLabel.textContent = `Question ${qIdx + 1} / ${QUESTIONS.length}`;
+  progressPct.textContent = pct + '%';
+  progressWrap.hidden = false;
+}
+
+function renderIntro() {
+  progressWrap.hidden = true;
+  app.innerHTML = `
+    <div class="intro-emoji">🌟</div>
+    <div class="intro-title">Job Explorer<br><span style="font-size:.75em;color:var(--coral)">职业探索</span></div>
+    <div class="intro-sub">Find jobs that suit YOU!&nbsp; 发现适合你的职业！</div>
+    <div class="intro-info">
+      <ul>
+        <li>⏱ Takes about <strong>10–15 minutes</strong> 大约需要 10–15 分钟</li>
+        <li>📱 No internet needed after opening 打开后不需要网络</li>
+        <li>🎯 You'll discover <strong>top jobs</strong> that match your interests 你将发现符合你兴趣的职业</li>
+        <li>📄 Fill in your <strong>paper worksheet</strong> using your results 用测试结果填写纸质工作单，上课时上交</li>
+      </ul>
+    </div>
+    <input type="text" class="name-input" id="nameInput" placeholder="Your name / 你的名字" maxlength="40" value="${studentName}">
+    <div class="nav">
+      <button class="btn btn-primary" id="startBtn" ${studentName ? '' : 'disabled'}>Start 开始 →</button>
+    </div>
+  `;
+  const nameInput = document.getElementById('nameInput');
+  const startBtn = document.getElementById('startBtn');
+  nameInput.addEventListener('input', () => {
+    studentName = nameInput.value.trim();
+    startBtn.disabled = !studentName;
+  });
+  startBtn.addEventListener('click', () => { step = 0; render(); });
+}
+
+function renderQuestion(idx) {
+  const q = QUESTIONS[idx];
+  updateProgress(idx);
+  const selectedAns = answers[q.id];
+  app.innerHTML = `
+    <div class="card-eyebrow">Question ${idx + 1} of ${QUESTIONS.length}</div>
+    <div class="card-title">${q.en}</div>
+    <div class="card-subtitle">${q.zh}</div>
+    <div class="options" id="opts"></div>
+    <div class="nav">
+      ${idx > 0 ? '<button class="btn btn-ghost" id="backBtn">← Back 上一题</button>' : ''}
+      <button class="btn btn-primary" id="nextBtn" ${selectedAns != null ? '' : 'disabled'}>
+        ${idx === QUESTIONS.length - 1 ? 'See results 查看结果 🎉' : 'Next 下一题 →'}
+      </button>
+    </div>
+  `;
+  const opts = document.getElementById('opts');
+  const EMOJIS = ['🌟','💡','🎯','🔥'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (selectedAns === i ? ' selected' : '');
+    btn.innerHTML = `
+      <span class="emoji">${EMOJIS[i]}</span>
+      <span><span class="option-text-en">${opt.en}</span><span class="option-text-zh">${opt.zh}</span></span>
+    `;
+    btn.addEventListener('click', () => {
+      answers[q.id] = i;
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('nextBtn').disabled = false;
+    });
+    opts.appendChild(btn);
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (idx === QUESTIONS.length - 1) { score(); step = 'results'; render(); }
+    else { step = idx + 1; render(); }
+  });
+  if (idx > 0) {
+    document.getElementById('backBtn').addEventListener('click', () => { step = idx - 1; render(); });
+  }
+}
+
+function matchColor(job) {
+  // Return a readable match % label style
+  const pct = job.pct;
+  if (pct >= 70) return { bg: 'var(--teal)', label: '⭐ Great match! 非常匹配' };
+  if (pct >= 45) return { bg: 'var(--gold)', label: '👍 Good match 不错的匹配' };
+  return { bg: 'var(--muted)', label: '✓ Worth exploring 值得探索' };
+}
+
+function renderResults() {
+  progressWrap.hidden = true;
+  const jobCardsHTML = topJobs.map(job => {
+    const m = matchColor(job);
+    return `
+      <div class="job-card">
+        <div class="job-card-header" style="background:${job.color}18;border-bottom:1px solid ${job.color}30">
+          <div class="job-icon" style="background:${job.color}22">${job.emoji}</div>
+          <div>
+            <div class="job-name-en" style="color:${job.color}">${job.en}</div>
+            <div class="job-name-zh">${job.zh}</div>
+          </div>
+          <div class="match-badge" style="background:${m.bg}">${m.label}</div>
+        </div>
+        <div class="job-card-body">
+          <p>${job.descEn}</p>
+          <p style="margin-top:4px;font-size:.82rem">${job.descZh}</p>
+          <div class="job-detail-row">
+            <span style="font-size:.78rem;color:var(--muted);align-self:center">Key skills:</span>
+            ${job.skills.map(s => `<span class="detail-chip">${s}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="results-header">
+      <div class="big-emoji">🎉</div>
+      <h2>Here are your top jobs, ${studentName}!<br><span style="color:var(--coral)">这些职业很适合你！</span></h2>
+      <p>Based on your answers · 根据你的答案</p>
+    </div>
+
+    <div class="job-cards">${jobCardsHTML}</div>
+
+    <div class="share-note">
+      <strong>📄 How to submit / 如何上交作业：</strong><br>
+      Write your top job results and your answers on the <strong>paper worksheet</strong> your teacher gave you, and hand it in during class.<br>
+      把你的职业测试结果和答案填写在老师发给你的<strong>纸质工作单</strong>上，课堂上交给老师。
+    </div>
+
+    <div class="nav" style="justify-content:space-between">
+      <button class="btn btn-ghost" id="retryBtn">← Redo quiz 重新测试</button>
+    </div>
+    <p style="text-align:center;font-size:.75rem;color:var(--border);margin-top:20px;letter-spacing:.04em">✦ Designed by Lavinder · Job Explorer · 30 careers ✦</p>
+  `;
+
+  document.getElementById('retryBtn').addEventListener('click', () => {
+    answers = {}; step = 0; render();
+  });
+}
+
+function render() {
+  if (step === 'intro') renderIntro();
+  else if (step === 'results') renderResults();
+  else renderQuestion(step);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Boot — restore name from localStorage if available
+try {
+  const saved = JSON.parse(localStorage.getItem('jr_state') || '{}');
+  if (saved.name) studentName = saved.name;
+} catch(e){}
+
+render();
+
+// Auto-save name
+document.addEventListener('input', e => {
+  if (e.target.id === 'nameInput') {
+    try { localStorage.setItem('jr_state', JSON.stringify({ name: e.target.value })); } catch(e2){}
+  }
+});
+</script>
+
+</body></html>
